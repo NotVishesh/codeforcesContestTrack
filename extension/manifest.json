@@ -1,0 +1,15 @@
+{
+    "manifest_version": 3,
+    "name": "Auto Task Extension",
+    "version": "1.0",
+    "description": "A Chrome extension that checks for new Codeforces contests every 12 hours and adds them to Google Calendar.",
+    "permissions": [
+      "alarms",
+      "storage",
+      "notifications"
+    ],
+    "background": {
+      "service_worker": "background.js"
+    }
+  }
+  
