@@ -118,7 +118,7 @@ session.state = state;
 app.get("/", (req, res) => {
   res.send("Welcome to Codeforces Contest Reminder, Please authenticate to start receiving reminders");
 
-}
+});
 
 app.get("/auth", (req, res) => {
   req.session.state = state;
@@ -128,7 +128,7 @@ app.get("/auth", (req, res) => {
     scope: scopes,
     include_granted_scopes: true,
     state: state,
-  });
+  })
   res.json({ url: authorizationUrl });
 });
 
