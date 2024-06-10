@@ -4,7 +4,7 @@ const CHECK_INTERVAL_HOURS = 12;
 const CHECK_INTERVAL_MINUTES = CHECK_INTERVAL_HOURS * 60;  
 
 function firstInstall() {
-  fetch('http://localhost:3000/auth')
+  fetch('https://codeforces-contest-tracker.vercel.app/auth')
     .then(response => response.json())
     .then(data => {
       chrome.tabs.create({ url: data.url });
@@ -39,7 +39,7 @@ chrome.cookies.onChanged.addListener((changeInfo) => {
 const checkForNewContests = async () => {
   const { CFrefreshToken } = await chrome.storage.local.get('CFrefreshToken');
   try {
-    const response = await fetch('http://localhost:3000/recheckContest', {
+    const response = await fetch('https://codeforces-contest-tracker.vercel.app/recheckContest', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
