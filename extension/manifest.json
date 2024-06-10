@@ -13,12 +13,7 @@
     "background": {
       "service_worker": "background.js"
     },
-    "content_scripts": [
-      {
-        "matches": ["http://localhost:3000/oauth2callback*"],
-        "js": ["content.js"]
-      }
-    ],
+    
     "host_permissions": [
     "http://localhost/*"
   ]

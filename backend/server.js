@@ -115,6 +115,11 @@ const scopes = [
 const state = crypto.randomBytes(32).toString("hex");
 session.state = state;
 
+app.get("/", (req, res) => {
+  res.send("Welcome to Codeforces Contest Reminder, Please authenticate to start receiving reminders");
+
+}
+
 app.get("/auth", (req, res) => {
   req.session.state = state;
 
