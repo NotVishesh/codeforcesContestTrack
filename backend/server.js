@@ -101,11 +101,11 @@ app.use(
     saveUninitialized: true,
   })
 );
-
+const redirect_url = "https://codeforces-contest-tracker.vercel.app/oauth2callback"
 const oauth2Client = new google.auth.OAuth2(
   process.env.CLIENT_ID,
   process.env.CLIENT_SECRET,
-  process.env.REDIRECT_URL
+  redirect_url
 );
 
 const scopes = [
