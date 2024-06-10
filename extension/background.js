@@ -1,61 +1,61 @@
-const CHECK_INTERVAL_HOURS = 12;
-// console.log('Background script is running!');
 
+
+const CHECK_INTERVAL_HOURS = 12;
+const CHECK_INTERVAL_MINUTES = CHECK_INTERVAL_HOURS * 60;  
 
 function firstInstall() {
-  console.log('First install detected.');
   fetch('http://localhost:3000/auth')
     .then(response => response.json())
     .then(data => {
       chrome.tabs.create({ url: data.url });
-      
-      // window.location.href = data.url;  // This line won't work in a background script
     })
     .catch(error => {
       console.error('Error:', error);
     });
 }
 
+function saveRefreshToken(token) {
+  chrome.storage.local.set({ CFrefreshToken: token } )
+  
+}
 
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
-  if (reason !== 'install') {
-    console.log('This is not a first install.');
-    return;
-  }
-
-  // Open a new tab to redirect the user to the authentication page
-  // chrome.tabs.create({ url: 'http://localhost:3000/auth' });
-  firstInstall(); // Call the function to open a new tab
-
-
-
+  
+  firstInstall();
+ 
   await chrome.alarms.create('checkCfContests', {
-    periodInMinutes: 0.5  // corrected to match the interval in hours
+    periodInMinutes: CHECK_INTERVAL_MINUTES
   });
+  
+});
 
-  // Optionally, you can check for new contests immediately after installation
-  checkForNewContests();
+chrome.cookies.onChanged.addListener((changeInfo) => {
+  if (changeInfo.cookie.name === 'refreshToken') {
+    const token = changeInfo.cookie.value;
+    saveRefreshToken(token);
+  }
 });
 
 const checkForNewContests = async () => {
-  console.log('checkForNewContests called');
+  const { CFrefreshToken } = await chrome.storage.local.get('CFrefreshToken');
   try {
-    const response = await fetch('http://localhost:3000/auth');
-    const data = await response.json();
-    console.log('Response:', response);
-    console.log('Data:', data);
-    // window.location.href = data.url;  // This line won't work in a background script
+    const response = await fetch('http://localhost:3000/recheckContest', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+    },
+      body: JSON.stringify({ token: CFrefreshToken })
+    });
+    console.log(response);
+    // Handle the fetched data here
   } catch (error) {
     console.error('Error:', error);
   }
 };
 
 chrome.alarms.onAlarm.addListener((alarm) => {
-  console.log('Alarm triggered:', alarm.name);
+  
   if (alarm.name === "checkCfContests") {
-    console.log("Correct alarm triggered, checking for new contests...");
     checkForNewContests();
-  } else {
-    console.log('Other alarm triggered:', alarm.name);
-  }
+  } 
 });

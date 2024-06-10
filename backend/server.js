@@ -4,11 +4,14 @@ const crypto = require("crypto");
 const express = require("express");
 const session = require("express-session");
 const cors = require("cors");
+const bodyParser = require('body-parser');
+
 
 const app = express();
 
 // Enable CORS for all routes
 app.use(cors());
+app.use(bodyParser.json()); 
 
 async function getContestList() {
   try {
@@ -20,12 +23,12 @@ async function getContestList() {
   }
 }
 
-async function fetchEventsList(EventsListUrl, tokens) {
+async function fetchEventsList(EventsListUrl, access_token) {
   try {
     const response = await fetch(EventsListUrl, {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${tokens.access_token}`,
+        Authorization: `Bearer ${access_token}`,
         Accept: "application/json",
       },
     });
@@ -35,7 +38,7 @@ async function fetchEventsList(EventsListUrl, tokens) {
     }
 
     const data = await response.json();
-    // console.log(data.items);
+
     return data.items;
     // Handle the response data here
   } catch (error) {
@@ -45,8 +48,7 @@ async function fetchEventsList(EventsListUrl, tokens) {
 }
 
 // Usage example
-// const EventsListUrl = 'YOUR_EVENTS_LIST_URL';
-// const tokens = { access_token: 'YOUR_ACCESS_TOKEN' };
+
 
 
 
@@ -89,21 +91,7 @@ const calendarEventAdder = async (contest,token) => {
   }
 };
 
-// const AllEventList = async (EventsListUrl,access_token) => {
-//   const response = await fetch(EventsListUrl, {
-//    method: "GET",
-//    headers: {
-//      "Authorization": `Bearer ${access_token}`,
-//      "Accept": "application/json"
-//    }
-//  })
-//   if (!response.ok) {
-//     throw new Error(`HTTP error! Status: ${response.status}`);
-//   }
-//   console.log(response.json().items);
-//   return response.json();
 
-// }
 
 // Setup session middleware
 app.use(
@@ -168,12 +156,12 @@ app.get("/oauth2callback", async (req, res) => {
         UpcomingContest.push(cfContestList[i]);
       }
     }
-    // console.log(UpcomingContest);
+
     
    
 
-    const eventItems = await fetchEventsList(EventsListUrl, tokens);
-    // console.log(eventItems);
+    const eventItems = await fetchEventsList(EventsListUrl, tokens.access_token);
+
 
 
     for (let i = 0; i < UpcomingContest.length; i++) {
@@ -188,13 +176,53 @@ app.get("/oauth2callback", async (req, res) => {
         await calendarEventAdder(UpcomingContest[i], tokens.access_token);
       }
     }
-  
 
-    res.send("Authentication successful!");
+    res.cookie('refreshToken', tokens.refresh_token, { httpOnly: true });
+    res.send("Authentication successful");
   } catch (error) {
     console.error("Error retrieving access token:", error);
     res.status(500).send("Authentication failed");
   }
+});
+
+app.post("/recheckContest", express.json(), async (req, res) => {
+  const {token} =  req.body;
+  const refrehtoken = decodeURIComponent(token)
+  oauth2Client.setCredentials({
+    refresh_token: refrehtoken
+  });
+  const newAccessToken = await oauth2Client.getAccessToken();
+  const myAccessTokenVariable = newAccessToken.res.data.access_token;
+
+  const EventsListUrl = `https://www.googleapis.com/calendar/v3/calendars/primary/events?key=${process.env.API_KEY}&q=codeforces_contest_ID`;
+
+  const cfContestList = await getContestList();
+  let UpcomingContest =[];
+  for (let i = 0; i < 20; i++) {
+    if (cfContestList[i].phase === "BEFORE") {
+      UpcomingContest.push(cfContestList[i]);
+    }
+  }
+
+  const eventItems = await fetchEventsList(EventsListUrl, myAccessTokenVariable);
+
+
+
+  for (let i = 0; i < UpcomingContest.length; i++) {
+    let flag = 0;
+    for (let j = 0; j < eventItems.length; j++) {
+      if (eventItems[j].description === `codeforces_contest_ID=${UpcomingContest[i].id}`) {
+        flag = 1;
+        break;
+      }
+    }
+    if (flag === 0) {
+      await calendarEventAdder(UpcomingContest[i], myAccessTokenVariable);
+    }
+  }
+res.send("Contest rechecked");
+
+
 });
 
 app.listen(3000, () => {

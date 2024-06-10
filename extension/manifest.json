@@ -1,15 +1,26 @@
 {
     "manifest_version": 3,
-    "name": "Auto Task Extension",
+    "name": "CF Calendar",
     "version": "1.0",
     "description": "A Chrome extension that checks for new Codeforces contests every 12 hours and adds them to Google Calendar.",
     "permissions": [
       "alarms",
       "storage",
+      "cookies",
+      "tabs",
       "notifications"
     ],
     "background": {
       "service_worker": "background.js"
-    }
+    },
+    "content_scripts": [
+      {
+        "matches": ["http://localhost:3000/oauth2callback*"],
+        "js": ["content.js"]
+      }
+    ],
+    "host_permissions": [
+    "http://localhost/*"
+  ]
   }
   
