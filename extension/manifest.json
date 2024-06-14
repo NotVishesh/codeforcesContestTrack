@@ -13,6 +13,12 @@
     "background": {
       "service_worker": "background.js"
     },
+    "icons": {
+      "16": "./icons/OIG3.jpeg",
+      "32": "./icons/OIG3.jpeg",
+      "48": "./icons/OIG3.jpeg",
+      "128": "./icons/OIG3.jpeg"
+    },
     
     "host_permissions": [
     "http://localhost/*"
