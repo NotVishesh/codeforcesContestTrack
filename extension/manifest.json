@@ -21,7 +21,9 @@
     },
     
     "host_permissions": [
-    "http://localhost/*"
+    "http://localhost/*",
+    "codeforces-contest-tracker.vercel.app"
+
   ]
   }
   
