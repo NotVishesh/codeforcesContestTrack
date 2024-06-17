@@ -6,9 +6,7 @@
     "permissions": [
       "alarms",
       "storage",
-      "cookies",
-      "tabs",
-      "notifications"
+      "cookies"
     ],
     "background": {
       "service_worker": "background.js"
@@ -22,7 +20,7 @@
     
     "host_permissions": [
     "http://localhost/*",
-    "codeforces-contest-tracker.vercel.app"
+    "https://codeforces-contest-tracker.vercel.app/*"
 
   ]
   }
