@@ -5,6 +5,7 @@ const express = require("express");
 const session = require("express-session");
 const cors = require("cors");
 const bodyParser = require('body-parser');
+const path = require('path');
 
 
 const app = express();
@@ -57,7 +58,7 @@ const calendarEventAdder = async (contest,token) => {
     summary: contest.name,
     description: `codeforces_contest_ID=${contest.id}`,
     start: {
-      dateTime: new Date(contest.startTimeSeconds * 1000).toISOString(),
+      dateTime: new Date(contest.startTimeSeconds * 1000).toISOString(), //scopeUsed
       timeZone: "UTC",
     },
     end: {
@@ -109,14 +110,18 @@ const oauth2Client = new google.auth.OAuth2(
 );
 
 const scopes = [
-  "https://www.googleapis.com/auth/calendar",
+  "https://www.googleapis.com/auth/calendar",  //scopeUsed
 ];
 
 const state = crypto.randomBytes(32).toString("hex");
 session.state = state;
 
 app.get("/", (req, res) => {
-  res.send("Welcome to Codeforces Contest Reminder, Please authenticate to start receiving reminders");
+  res.sendFile(path.join(__dirname, 'home.html'));
+
+});
+app.get("/privacy", (req, res) => {
+  res.sendFile(path.join(__dirname, 'privacy.html'));
 
 });
 
@@ -150,7 +155,7 @@ app.get("/oauth2callback", async (req, res) => {
 
     let eventList = [];
 
-    const EventsListUrl = `https://www.googleapis.com/calendar/v3/calendars/primary/events?key=${process.env.API_KEY}&q=codeforces_contest_ID`;
+    const EventsListUrl = `https://www.googleapis.com/calendar/v3/calendars/primary/events?key=${process.env.API_KEY}&q=codeforces_contest_ID`;  //scopeUsed
 
     
 
@@ -165,7 +170,7 @@ app.get("/oauth2callback", async (req, res) => {
     
    
 
-    const eventItems = await fetchEventsList(EventsListUrl, tokens.access_token);
+    const eventItems = await fetchEventsList(EventsListUrl, tokens.access_token); //scopeUsed
 
 
 
@@ -216,7 +221,7 @@ app.post("/recheckContest", express.json(), async (req, res) => {
   for (let i = 0; i < UpcomingContest.length; i++) {
     let flag = 0;
     for (let j = 0; j < eventItems.length; j++) {
-      if (eventItems[j].description === `codeforces_contest_ID=${UpcomingContest[i].id}`) {
+      if (eventItems[j].description === `codeforces_contest_ID=${UpcomingContest[i].id}`) { //scopeUsed
         flag = 1;
         break;
       }
